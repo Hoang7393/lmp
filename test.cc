@@ -56,23 +56,24 @@ struct add {
     using type = cint<lvalue::value + rvalue::value>;
 };
 
-#define LET(__name__, __expr__) \
+#define let_lazy(__name__, ...) \
     struct __name__ { \
-        using type = typename __expr__::type; \
+        using type = typename __VA_ARGS__::type; \
     }; \
 
 template<typename Lst>
 struct length {
+    // length is a function, args must be evaluated first
     using lst = force<Lst>;
 
-    LET(cdr_length, length<cdr<lst>>);
-
-    using type = typename
+    let_lazy(cdr_length, length<cdr<lst>>);
+    let_lazy(expr,
         cond<
             eq<lst, nil>::value,
             cint<0>,
-            add<cint<1>, cdr_length>>::type;
+            add<cint<1>, cdr_length>>);
 
+    using type = force<expr>;
     static constexpr int value = type::value;
 };
 
