@@ -99,21 +99,18 @@ using intp = intp_impl<force<T>>;
 template<typename T>
 struct pairp_impl : std::false_type { };
 
-template<typename H, typename Tail>
-struct pairp_impl<cons<H, Tail>> : std::true_type { };
+template<typename Head, typename Tail>
+struct pairp_impl<cons<Head, Tail>> : std::true_type { };
 
 template<typename T>
 using pairp = pairp_impl<force<T>>;
 
 template<typename T>
 struct listp_impl : std::false_type { };
-
 template<>
 struct listp_impl<nil> : std::true_type { };
-
 template<typename H, typename Tail>
 struct listp_impl<cons<H, Tail>> : listp_impl<force<Tail>> { };
-
 template<typename T>
 using listp = listp_impl<force<T>>;
 
@@ -135,21 +132,21 @@ struct cond_impl<std::false_type, tb, fb> {
   using type = force<fb>;
 };
 
-meta_fn(cond, class Cond, class tb, class fb) {
+meta_fn(cond_, class Cond, class tb, class fb) {
     using condition = force<Cond>;
     meta_return (cond_impl<condition, tb, fb>);
 };
 
-// case: case_<pred1, expr1, pred2, expr2, ..., default_expr>
-meta_fn(case_, class... Args);
+// cond<pred1, expr1, pred2, expr2, ..., default_expr>
+meta_fn(cond, class... Args);
     template<class default_expr>
-    struct case_<default_expr> {
+    struct cond<default_expr> {
         meta_return (default_expr);
     };
     template<class pred, class expr, class... rest>
-    struct case_<pred, expr, rest...> {
-        let_lazy(next, case_<rest...>);
-        meta_return (cond<pred, expr, next>);
+    struct cond<pred, expr, rest...> {
+        let_lazy(next, cond<rest...>);
+        meta_return (cond_<pred, expr, next>);
     };
 
 // logical primitive (with short-circuit)
@@ -163,7 +160,7 @@ meta_fn(and_, class... Bs);
     template<class B, class... Bs>
     struct and_<B, Bs...> {
         let_lazy(rest, and_<Bs...>);
-        meta_return (cond<B, rest, std::false_type>);
+        meta_return (cond_<B, rest, std::false_type>);
         has_value;
     };
 
@@ -176,7 +173,7 @@ meta_fn(or_, class... Bs);
     template<class B, class... Bs>
     struct or_<B, Bs...> {
         let_lazy(rest, or_<Bs...>);
-        meta_return (cond<B, std::true_type, rest>);
+        meta_return (cond_<B, std::true_type, rest>);
         has_value;
     };
 
@@ -188,7 +185,7 @@ meta_fn(equal, class L, class R) {
     using r = force<R>;
     let_lazy(pair_eq, and_<equal<car<l>, car<r>>, equal<cdr<l>, cdr<r>>>);
     meta_return (
-        case_<and_<pairp<l>, pairp<r>>,
+        cond<and_<pairp<l>, pairp<r>>,
               pair_eq,
               eq<l, r>>);
     has_value;

@@ -76,25 +76,25 @@ struct should_not_be_forced;
 static_assert(!and_<std::false_type, should_not_be_forced>::value);
 static_assert(or_<std::true_type, should_not_be_forced>::value);
 
-// case_ checks
+// cond checks
 static_assert(
-    case_<std::true_type, Int<1>,
+    cond<std::true_type, Int<1>,
           Int<2>>
     ::type::value == 1);
 static_assert(
-    case_<std::false_type, Int<1>,
+    cond<std::false_type, Int<1>,
           std::true_type, Int<2>,
           Int<3>>
     ::type::value == 2);
 static_assert(
-    case_<std::false_type, Int<1>,
+    cond<std::false_type, Int<1>,
           std::false_type, Int<2>,
           Int<3>>
     ::type::value == 3);
 
-// case_ short-circuit: later predicate must not be instantiated if already matched
+// cond short-circuit: later predicate must not be instantiated if already matched
 static_assert(
-    case_<std::true_type, std::true_type,
+    cond<std::true_type, std::true_type,
           should_not_be_forced, std::false_type,
           std::false_type>\
     ::type::value);
