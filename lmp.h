@@ -321,11 +321,14 @@ meta_fn(append, class Lst, class Elem) {
 meta_fn(range, int start, int end) {
     meta_fn(range_impl, int cur, class lst) {
         meta_return (
-            cond<eq<Int<cur>, Int<end>>,
+            cond<lt<Int<cur>, Int<start>>,
                 lst,
-                range_impl<(cur+1), append<lst, Int<cur>>>>);
+                range_impl<(cur-1), cons<Int<cur>, lst>>>);
     };
-    meta_return(range_impl<start, nil>);
+    meta_return (
+        cond<le<Int<(end-start)>, Int<0>>,
+            nil,
+            range_impl<(end-1), nil>>);
 };
 
 meta_fn(memberp, class Item, class Lst) {
