@@ -216,18 +216,16 @@ meta_fn(mod, class lhs, class rhs) {
 // list primitives
 
 meta_fn(list , class... args);
+    template<class arg, class... args>
+    struct list<arg, args...> {
+        meta_return (cons<arg, list<args...>>);
+    };
+    template<>
+    struct list<> {
+        meta_return (nil);
+    };
 
-template<class arg, class... args>
-struct list<arg, args...> {
-    meta_return (cons<arg, list<args...>>);
-};
-
-template<>
-struct list<> {
-    meta_return (nil);
-};
-
-meta_fn(int_list, int... n) {
+meta_fn(IntList, int... n) {
     meta_return (list<Int<n>...>);
 };
 
