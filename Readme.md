@@ -10,7 +10,7 @@ template as an esolang, and create a "Lisp" on it just for fun.
 See `test.cc` for examples.
 
 
-## Example
+## Examples
 
 ### 1. Basic List Operations
 
@@ -33,7 +33,14 @@ static_assert(length<mapped_list>::value == 3);
 static_assert(nth<mapped_list, 0>::type::value == 2);
 static_assert(nth<mapped_list, 1>::type::value == 3);
 static_assert(nth<mapped_list, 2>::type::value == 4);
+
+template<typename T>
+using is_even = equal<mod<T, Int<2>>, Int<0>>;
+
+using even_numbers = filter<is_even, IntList<1, 2, 3, 4, 5, 6>>;
+static_assert(equal<even_numbers, IntList<2, 4, 6>>::value);
 ```
+
 
 ### 2. Infinite List of Primes (Sieve of Eratosthenes)
 
@@ -48,17 +55,13 @@ meta_fn(infinite_integers, int n) {
     meta_return (cons<Int<n>, next>);
 };
 
-meta_fn(filter_mod, class lst, int n) {
-    let_lazy(tail, filter_mod<cdr<lst>, n>);
-    meta_return (
-        cond<equal<mod<car<lst>, Int<n>>, Int<0>>,
-            tail,
-            cons<car<lst>, tail>>);
-};
-
 meta_fn(prime_sieve, class lst) {
     static constexpr int n = car<lst>::value;
-    let_lazy(tail, prime_sieve<filter_mod<cdr<lst>, n>>);
+
+    template<class T>
+    using not_divisible = not_<equal<mod<T, Int<n>>, Int<0>>>;
+    
+    let_lazy(tail, prime_sieve<filter<not_divisible, cdr<lst>>>);
     meta_return (cons<Int<n>, tail>);
 };
 
@@ -72,26 +75,32 @@ static_assert(nth<primes, 4>::type::value == 11);
 static_assert(nth<primes, 5>::type::value == 13);
 ```
 
-Similar form in Scheme:
+This is similar to an infinite list of primes in Scheme:
 
 ```scheme
 (define (infinite-integers n)
    (define next (delay (infinite-integers (+ n 1))))
    (cons n next))
 
-(define (filter-mod lst n)
-    (define tail (delay (filter-mod (force (cdr lst)) n)))
-    (if (= (modulo (car lst) n) 0)
-        (force tail)
-        (cons (car lst) tail)))
-
 (define (prime-sieve lst)
   (define n (car lst))
-  (define tail (delay (prime-sieve (filter-mod (force (cdr lst)) n))))
+  (define (not-divisible x) (not (= (modulo x n) 0)))
+  (define tail
+    (delay
+      (prime-sieve
+        (filter not-divisible(force (cdr lst))))))
   (cons n tail))
 
 (define primes
   (prime-sieve (infinite-integers 2)))
+```
+
+or in Haskell:
+
+```
+primes = filterPrime [2..] where
+  filterPrime (p:xs) =
+    p : filterPrime [x | x <- xs, x `mod` p /= 0]
 ```
 
 ## How This Works

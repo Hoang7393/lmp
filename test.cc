@@ -25,19 +25,14 @@ meta_fn(infinite_integers, int n) {
     meta_return (cons<Int<n>, next>);
 };
 
-meta_fn(filter_mod, class Lst, int n) {
-    using lst = force<Lst>;
-    let_lazy(tail, filter_mod<cdr<lst>, n>);
-    meta_return (
-        cond<equal<mod<car<lst>, Int<n>>, Int<0>>,
-            tail,
-            cons<car<lst>, tail>>);
-};
-
 meta_fn(prime_sieve, class Lst) {
     using lst = force<Lst>;
     static constexpr int n = car<lst>::value;
-    let_lazy(tail, prime_sieve<filter_mod<cdr<lst>, n>>);
+
+    template<class T>
+    using not_divisible = not_<equal<mod<T, Int<n>>, Int<0>>>;
+    
+    let_lazy(tail, prime_sieve<filter<not_divisible, cdr<lst>>>);
     meta_return (cons<Int<n>, tail>);
 };
 
@@ -182,6 +177,21 @@ static_assert(length<mapped_add1_list>::value == 3);
 static_assert(nth<mapped_add1_list, 0>::type::value == 2);
 static_assert(nth<mapped_add1_list, 1>::type::value == 3);
 static_assert(nth<mapped_add1_list, 2>::type::value == 4);
+
+template<typename T>
+using is_even = equal<mod<T, Int<2>>, Int<0>>;
+
+using filtered_empty_list = filter<is_even, nil>;
+static_assert(nilp<filtered_empty_list>::value);
+
+using filtered_even_list = filter<is_even, IntList<1, 2, 3, 4, 5, 6>>;
+static_assert(equal<filtered_even_list, IntList<2, 4, 6>>::value);
+
+using filtered_all_even = filter<is_even, IntList<2, 4, 6>>;
+static_assert(equal<filtered_all_even, IntList<2, 4, 6>>::value);
+
+using filtered_none_even = filter<is_even, IntList<1, 3, 5>>;
+static_assert(nilp<filtered_none_even>::value);
 
 static_assert(nth<primes, 0>::type::value == 2);
 static_assert(nth<primes, 1>::type::value == 3);

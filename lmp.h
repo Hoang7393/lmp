@@ -352,6 +352,19 @@ meta_fn(map, template<class> class fn, class Lst) {
             new_lst>);
 };
 
+meta_fn(filter, template<class> class pred, class Lst) {
+    using lst = force<Lst>;
+    let_lazy(filtered_tail, filter<pred, cdr<lst>>);
+    let_lazy(new_lst,
+        cond<pred<car<lst>>,
+            cons<car<lst>, filtered_tail>,
+            filtered_tail>);
+    meta_return (
+        cond<nilp<lst>,
+            nil,
+            new_lst>);
+};
+
 meta_fn(apply_impl, template<class... args> class fn, class lst, typename = void, class... applied);
     template<
         template<class... args> class fn,
