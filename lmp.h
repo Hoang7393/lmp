@@ -128,18 +128,22 @@ meta_fn(add , class... args);
     template<class arg, class... args>
     struct add<arg, args...> {
         meta_return (add2<arg, add<args...>>);
+        static constexpr auto value = type::value;
     };
     template<>
     struct add<> {
         meta_return (Int<0>);
+        static constexpr auto value = type::value;
     };
 
 meta_fn(neg, class rhs) {
     meta_return (Int<(- force<rhs>::value)>);
+    static constexpr auto value = type::value;
 };
 
 meta_fn(sub, class lhs, class rhs) {
     meta_return (Int<(force<lhs>::value - force<rhs>::value)>);
+    static constexpr auto value = type::value;
 };
 
 meta_fn(mul2, class lhs, class rhs) {
@@ -150,18 +154,22 @@ meta_fn(mul , class... args);
     template<class arg, class... args>
     struct mul<arg, args...> {
         meta_return (mul2<arg, add<args...>>);
+        static constexpr auto value = type::value;
     };
     template<>
     struct mul<> {
         meta_return (Int<1>);
+        static constexpr auto value = type::value;
     };
 
 meta_fn(div, class lhs, class rhs) {
     meta_return (Int<(force<lhs>::value / force<rhs>::value)>);
+    static constexpr auto value = type::value;
 };
 
 meta_fn(mod, class lhs, class rhs) {
     meta_return (Int<(force<lhs>::value % force<rhs>::value)>);
+    static constexpr auto value = type::value;
 };
 
 // list primitives
@@ -189,6 +197,7 @@ meta_fn(length, class Lst) {
         cond<nilp<lst>,
             Int<0>,
             add<Int<1>, cdr_length>>);
+    static constexpr auto value = type::value;
 };
 
 meta_fn(nth, class Lst, int N) {

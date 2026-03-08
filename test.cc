@@ -59,7 +59,7 @@ static_assert(!not_<std::true_type>::value);
 using my_list = Intlist<1,2,3>;
 static_assert(car<my_list>::value == 1);
 static_assert(cadr<my_list>::value == 2);
-static_assert(length<my_list>::type::value == 3);
+static_assert(length<my_list>::value == 3);
 
 static_assert(nth<primes, 0>::type::value == 2);
 static_assert(nth<primes, 1>::type::value == 3);
@@ -68,7 +68,7 @@ static_assert(nth<primes, 3>::type::value == 7);
 static_assert(nth<primes, 4>::type::value == 11);
 static_assert(nth<primes, 5>::type::value == 13);
 
-static_assert(add<Int<1>, Int<2>, Int<3>>::type::value == 6);
+static_assert(add<Int<1>, Int<2>, Int<3>>::value == 6);
 static_assert(apply<add, Intlist<1, 2, 3>>::type::value == 6);
 static_assert(apply<add, Intlist<1, 2, 3, 4, 5, 6, 7, 8>>::type::value == 36);
 
