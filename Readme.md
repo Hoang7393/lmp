@@ -17,7 +17,7 @@ using namespace lmp;
 meta_fn(infinite_integers, int n) {
     // `let_lazy(name, expr)` is similar to `(define name (delay expr))` in scheme
     let_lazy(next, infinite_integers<n + 1>);
-    meta_return (cons<Int<n>, next>);
+    meta_return (Cons<Int<n>, next>);
 };
 
 meta_fn(filter_mod, class lst, int n) {
@@ -25,13 +25,13 @@ meta_fn(filter_mod, class lst, int n) {
     meta_return (
         cond<equal<mod<car<lst>, Int<n>>, Int<0>>,
             tail,
-            cons<car<lst>, tail>>);
+            Cons<car<lst>, tail>>);
 };
 
 meta_fn(prime_sieve, class lst) {
     static constexpr int n = car<lst>::value;
     let_lazy(tail, prime_sieve<filter_mod<cdr<lst>, n>>);
-    meta_return (cons<Int<n>, tail>);
+    meta_return (Cons<Int<n>, tail>);
 };
 
 using primes = prime_sieve<infinite_integers<2>>;
