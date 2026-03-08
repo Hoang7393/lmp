@@ -36,17 +36,17 @@ using force = typename T::type;
 
 #define has_value static constexpr int value = type::value
 
-// data Constructor
+// data constructor
 
-struct Nil { 
-    using type = Nil;
+struct nil { 
+    using type = nil;
 };
 
 template<typename head, typename tail>
-struct Cons {
+struct cons {
     using car = head;
     using cdr = tail;
-    using type = Cons<head, tail>;
+    using type = cons<head, tail>;
 };
 
 // data accessor
@@ -71,7 +71,7 @@ template<typename L, typename R>
 using eq = std::is_same<force<L>, force<R>>;
 
 template<typename T>
-using nilp = eq<T, Nil>;
+using nilp = eq<T, nil>;
 
 template<typename B>
 using not_ = std::bool_constant<!force<B>::value>;
@@ -128,12 +128,10 @@ meta_fn(add , class... args);
     template<class arg, class... args>
     struct add<arg, args...> {
         meta_return (add2<arg, add<args...>>);
-        has_value;
     };
     template<>
     struct add<> {
         meta_return (Int<0>);
-        has_value;
     };
 
 meta_fn(neg, class rhs) {
@@ -168,20 +166,20 @@ meta_fn(mod, class lhs, class rhs) {
 
 // list primitives
 
-meta_fn(List , class... args);
+meta_fn(list , class... args);
 
 template<class arg, class... args>
-struct List<arg, args...> {
-    meta_return (Cons<arg, List<args...>>);
+struct list<arg, args...> {
+    meta_return (cons<arg, list<args...>>);
 };
 
 template<>
-struct List<> {
-    meta_return (Nil);
+struct list<> {
+    meta_return (nil);
 };
 
-meta_fn(IntList, int... n) {
-    meta_return (List<Int<n>...>);
+meta_fn(Intlist, int... n) {
+    meta_return (list<Int<n>...>);
 };
 
 meta_fn(length, class Lst) {
@@ -191,7 +189,6 @@ meta_fn(length, class Lst) {
         cond<nilp<lst>,
             Int<0>,
             add<Int<1>, cdr_length>>);
-    has_value;
 };
 
 meta_fn(nth, class Lst, int N) {
@@ -201,13 +198,12 @@ meta_fn(nth, class Lst, int N) {
         cond<equal<Int<N>, Int<0>>,
             car<lst>,
             next>);
-    has_value;
 };
 
 meta_fn(reverse_impl, class Lst, class Acc) {
     using lst = force<Lst>;
     using acc = force<Acc>;
-    let_lazy(next, reverse_impl<cdr<lst>, Cons<car<lst>, acc>>);
+    let_lazy(next, reverse_impl<cdr<lst>, cons<car<lst>, acc>>);
     meta_return (
         cond<nilp<lst>,
             acc,
@@ -215,7 +211,7 @@ meta_fn(reverse_impl, class Lst, class Acc) {
 };
 
 meta_fn(reverse, class lst) {
-    meta_return (reverse_impl<lst, Nil>);
+    meta_return (reverse_impl<lst, nil>);
 };
 
 meta_fn(apply_impl, template<class... args> class fn, class lst, typename = void, class... applied);

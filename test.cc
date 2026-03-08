@@ -22,7 +22,7 @@ using namespace lmp;
 
 meta_fn(infinite_integers, int n) {
     let_lazy(next, infinite_integers<n + 1>);
-    meta_return (Cons<Int<n>, next>);
+    meta_return (cons<Int<n>, next>);
 };
 
 meta_fn(filter_mod, class lst, int n) {
@@ -30,13 +30,13 @@ meta_fn(filter_mod, class lst, int n) {
     meta_return (
         cond<equal<mod<car<lst>, Int<n>>, Int<0>>,
             tail,
-            Cons<car<lst>, tail>>);
+            cons<car<lst>, tail>>);
 };
 
 meta_fn(prime_sieve, class lst) {
     static constexpr int n = car<lst>::value;
     let_lazy(tail, prime_sieve<filter_mod<cdr<lst>, n>>);
-    meta_return (Cons<Int<n>, tail>);
+    meta_return (cons<Int<n>, tail>);
 };
 
 struct primes {
@@ -45,9 +45,9 @@ struct primes {
 
 // tests
 
-static_assert(eq<apply<List, IntList<1, 2, 3>>, IntList<1, 2, 3>>::value);
+static_assert(eq<apply<list, Intlist<1, 2, 3>>, Intlist<1, 2, 3>>::value);
 
-using reversed_list = reverse<IntList<1, 2, 3>>;
+using reversed_list = reverse<Intlist<1, 2, 3>>;
 static_assert(length<reversed_list>::value == 3);
 static_assert(nth<reversed_list, 0>::value == 3);
 static_assert(nth<reversed_list, 1>::value == 2);
@@ -56,7 +56,7 @@ static_assert(nth<reversed_list, 2>::value == 1);
 static_assert(not_<std::false_type>::value);
 static_assert(!not_<std::true_type>::value);
 
-using my_list = IntList<1,2,3>;
+using my_list = Intlist<1,2,3>;
 static_assert(car<my_list>::value == 1);
 static_assert(cadr<my_list>::value == 2);
 static_assert(length<my_list>::value == 3);
@@ -69,8 +69,8 @@ static_assert(nth<primes, 4>::value == 11);
 static_assert(nth<primes, 5>::value == 13);
 
 static_assert(add<Int<1>, Int<2>, Int<3>>::value == 6);
-static_assert(apply<add, IntList<1, 2, 3>>::type::value == 6);
-static_assert(apply<add, IntList<1, 2, 3, 4, 5, 6, 7, 8>>::type::value == 36);
+static_assert(apply<add, Intlist<1, 2, 3>>::type::value == 6);
+static_assert(apply<add, Intlist<1, 2, 3, 4, 5, 6, 7, 8>>::type::value == 36);
 
 int main() {
     return 0;
