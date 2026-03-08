@@ -72,6 +72,17 @@ static_assert(car<my_list>::value == 1);
 static_assert(cadr<my_list>::value == 2);
 static_assert(length<my_list>::value == 3);
 
+using appended_list = append<my_list, Int<4>>;
+static_assert(length<appended_list>::value == 4);
+static_assert(nth<appended_list, 0>::type::value == 1);
+static_assert(nth<appended_list, 1>::type::value == 2);
+static_assert(nth<appended_list, 2>::type::value == 3);
+static_assert(nth<appended_list, 3>::type::value == 4);
+
+static_assert(memberp<Int<1>, my_list>::value);
+static_assert(memberp<Int<2>, my_list>::value);
+static_assert(!memberp<Int<4>, my_list>::value);
+
 static_assert(nth<primes, 0>::type::value == 2);
 static_assert(nth<primes, 1>::type::value == 3);
 static_assert(nth<primes, 2>::type::value == 5);

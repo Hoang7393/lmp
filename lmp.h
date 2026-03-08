@@ -73,7 +73,6 @@ using cdar = cdr<car<lst>>;
 template<typename lst>
 using cddr = cdr<cdr<lst>>;
 
-
 // wrapper for integer
 
 template<int N>
@@ -263,6 +262,28 @@ meta_fn(reverse_impl, class Lst, class Acc) {
 
 meta_fn(reverse, class lst) {
     meta_return (reverse_impl<lst, nil>);
+};
+
+meta_fn(append, class Lst, class Elem) {
+    using lst = force<Lst>;
+    using elem = force<Elem>;
+    meta_return (
+        reverse<cons<elem, reverse<lst>>>);
+};
+
+meta_fn(memberp, class Item, class Lst) {
+    using lst = force<Lst>;
+    using item = force<Item>;
+    let_lazy(try_rest, memberp<item, cdr<lst>>);
+    let_lazy(check_list,
+        cond<eq<item, car<lst>>,
+            std::true_type,
+            try_rest>);
+    meta_return (
+        cond<nilp<lst>,
+            std::false_type,
+            check_list>);
+    has_value;
 };
 
 meta_fn(apply_impl, template<class... args> class fn, class lst, typename = void, class... applied);
