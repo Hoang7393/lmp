@@ -20,18 +20,8 @@
 
 namespace lmp {
 
-template<typename T, typename = void>
-struct force_impl {
-    using type = T;
-};
-
 template<typename T>
-struct force_impl<T, std::void_t<typename T::type>> {
-    using type = typename T::type;
-};
-
-template<typename T>
-using force = typename force_impl<T>::type;
+using force = typename T::type;
 
 // macros
 
@@ -48,12 +38,13 @@ using force = typename force_impl<T>::type;
 
 // data constructor
 
-struct nil {};
+struct nil { using type = nil; };
 
 template<typename head, typename tail>
 struct cons {
     using car = head;
     using cdr = tail;
+    using type = cons<head, tail>;
 };
 
 // data accessor
@@ -304,6 +295,15 @@ meta_fn(memberp, class Item, class Lst) {
             std::false_type,
             check_list>);
     has_value;
+};
+
+meta_fn(map, template<class> class fn, class Lst) {
+    using lst = force<Lst>;
+    let_lazy(new_lst,cons<fn<car<lst>>, map<fn, cdr<lst>>>);
+    meta_return (
+        cond<nilp<lst>,
+            nil,
+            new_lst>);
 };
 
 meta_fn(apply_impl, template<class... args> class fn, class lst, typename = void, class... applied);

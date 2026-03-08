@@ -51,6 +51,11 @@ static_assert(nth<reversed_list, 0>::type::value == 3);
 static_assert(nth<reversed_list, 1>::type::value == 2);
 static_assert(nth<reversed_list, 2>::type::value == 1);
 
+static_assert(eq<Int<7>, add<Int<3>, Int<4>>>::value);
+static_assert(!eq<Int<7>, add<Int<3>, Int<5>>>::value);
+static_assert(equal<Int<7>, add<Int<3>, Int<4>>>::value);
+static_assert(!equal<Int<8>, add<Int<3>, Int<4>>>::value);
+
 static_assert(not_<std::false_type>::value);
 static_assert(!not_<std::true_type>::value);
 
@@ -113,6 +118,21 @@ static_assert(nth<range_list, 4>::type::value == 9);
 static_assert(memberp<Int<1>, my_list>::value);
 static_assert(memberp<Int<2>, my_list>::value);
 static_assert(!memberp<Int<4>, my_list>::value);
+
+using mapped_neg_list = map<neg, my_list>;
+static_assert(length<mapped_neg_list>::value == 3);
+static_assert(nth<mapped_neg_list, 0>::type::value == -1);
+static_assert(nth<mapped_neg_list, 1>::type::value == -2);
+static_assert(nth<mapped_neg_list, 2>::type::value == -3);
+
+template<typename T>
+using add1 = force<add<Int<1>, force<T>>>;
+
+using mapped_add1_list = map<add1, my_list>;
+static_assert(length<mapped_add1_list>::value == 3);
+static_assert(nth<mapped_add1_list, 0>::type::value == 2);
+static_assert(nth<mapped_add1_list, 1>::type::value == 3);
+static_assert(nth<mapped_add1_list, 2>::type::value == 4);
 
 static_assert(nth<primes, 0>::type::value == 2);
 static_assert(nth<primes, 1>::type::value == 3);
