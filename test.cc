@@ -57,8 +57,41 @@ static_assert(nth<reversed_list, 2>::type::value == 1);
 
 static_assert(eq<Int<7>, add<Int<3>, Int<4>>>::value);
 static_assert(!eq<Int<7>, add<Int<3>, Int<5>>>::value);
+
+// intp checks
+static_assert(intp<Int<0>>::value);
+static_assert(intp<add<Int<1>, Int<2>>>::value);
+static_assert(!intp<nil>::value);
+static_assert(!intp<cons<Int<1>, nil>>::value);
+
+// pairp checks
+static_assert(pairp<cons<Int<1>, nil>>::value);
+static_assert(pairp<IntList<1, 2>>::value);
+static_assert(!pairp<nil>::value);
+static_assert(!pairp<Int<1>>::value);
+
+// listp checks
+static_assert(listp<nil>::value);
+static_assert(listp<IntList<1, 2, 3>>::value);
+static_assert(!listp<Int<1>>::value);
+static_assert(!listp<cons<Int<1>, Int<2>>>::value);
+
+// equal checks
 static_assert(equal<Int<7>, add<Int<3>, Int<4>>>::value);
 static_assert(!equal<Int<8>, add<Int<3>, Int<4>>>::value);
+static_assert(equal<IntList<1, 2, 3>, IntList<1, 2, 3>>::value);
+static_assert(!equal<IntList<1, 2, 3>, IntList<1, 2, 4>>::value);
+static_assert(!equal<IntList<1, 2>, cons<Int<1>, Int<2>>>::value);
+
+// complex equal cases
+static_assert(equal<
+    cons<IntList<1, 2>, cons<IntList<3, 4>, Int<2>>>,
+    cons<IntList<1, 2>, cons<IntList<3, 4>, add<Int<1>, Int<1>>>>
+>::value);
+static_assert(equal<
+    cons<Int<2>, cons<Int<3>, nil>>,
+    cons<add<Int<1>, Int<1>>, cons<Int<3>, nil>>
+>::value);
 
 static_assert(not_<std::false_type>::value);
 static_assert(!not_<std::true_type>::value);

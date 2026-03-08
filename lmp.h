@@ -105,14 +105,18 @@ struct pairp_impl<cons<Head, Tail>> : std::true_type { };
 template<typename T>
 using pairp = pairp_impl<force<T>>;
 
-template<typename T>
-struct listp_impl : std::false_type { };
-template<>
-struct listp_impl<nil> : std::true_type { };
-template<typename H, typename Tail>
-struct listp_impl<cons<H, Tail>> : listp_impl<force<Tail>> { };
-template<typename T>
-using listp = listp_impl<force<T>>;
+// forward declaration (used by listp)
+meta_fn(cond, class... Args);
+
+meta_fn(listp, class T) {
+    using t = force<T>;
+    let_lazy(rest, listp<cdr<t>>);
+    meta_return (
+        cond<nilp<t>, std::true_type,
+             pairp<t>, rest,
+             std::false_type>);
+    has_value;
+};
 
 template<typename B>
 using not_ = std::bool_constant<!force<B>::value>;
