@@ -409,4 +409,19 @@ meta_fn(string_to_list, const char *str) {
     meta_return (map<at, idx_lst>);
 };
 
+
+template<char... Cs>
+struct string_constant {
+    static constexpr char value[sizeof...(Cs) + 1] = { Cs..., '\0' };
+};
+
+meta_fn(list_to_string, class Lst, char... Cs) {
+    using lst = force<Lst>;
+    let_lazy(next, list_to_string<cdr<lst>, Cs..., (char)car<lst>::value>);
+    meta_return (
+        cond<nilp<lst>,
+            string_constant<Cs...>,
+            next>);
+};
+
 } // namespace lmp

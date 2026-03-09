@@ -140,6 +140,12 @@ static_assert(nth<hello_str_lst, 0>::type::value == (int)'h');
 static_assert(nth<hello_str_lst, 1>::type::value == (int)'e');
 static_assert(nth<hello_str_lst, 4>::type::value == (int)'o');
 
+using hello_str2 = list_to_string<IntList<'H', 'e', 'l', 'l', 'o'>>::type;
+static_assert(hello_str2::value[0] == 'H');
+static_assert(hello_str2::value[1] == 'e');
+static_assert(hello_str2::value[4] == 'o');
+static_assert(hello_str2::value[5] == '\0');
+
 using my_list = IntList<1,2,3>;
 static_assert(car<my_list>::value == 1);
 static_assert(cadr<my_list>::value == 2);
