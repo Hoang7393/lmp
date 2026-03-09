@@ -20,13 +20,19 @@
 
 namespace lmp {
 
+template <typename...>
+using void_t = void;
+
+template<bool B>
+using bool_constant = std::integral_constant<bool, B>;
+
 template<typename T, typename = void>
 struct force_impl {
     using type = T;
 };
 
 template<typename T>
-struct force_impl<T, std::void_t<typename T::type>> {
+struct force_impl<T, void_t<typename T::type>> {
     using type = typename T::type;
 };
 
@@ -45,7 +51,7 @@ using force = typename force_impl<T>::type;
 
 #define meta_return(...) using type = ::lmp::force<__VA_ARGS__>
 
-#define has_value static constexpr int value = type::value
+#define has_value static constexpr auto value = type::value
 
 // data constructor
 
@@ -119,7 +125,7 @@ meta_fn(listp, class T) {
 };
 
 template<typename B>
-using not_ = std::bool_constant<!force<B>::value>;
+using not_ = bool_constant<!force<B>::value>;
 
 // cond
 
@@ -196,16 +202,16 @@ meta_fn(equal, class L, class R) {
 };
 
 template<typename L, typename R>
-using gt = std::bool_constant<(force<L>::value > force<R>::value)>;
+using gt = bool_constant<(force<L>::value > force<R>::value)>;
 
 template<typename L, typename R>
-using ge = std::bool_constant<force<L>::value >= force<R>::value>;
+using ge = bool_constant<force<L>::value >= force<R>::value>;
 
 template<typename L, typename R>
-using lt = std::bool_constant<(force<L>::value < force<R>::value)>;
+using lt = bool_constant<(force<L>::value < force<R>::value)>;
 
 template<typename L, typename R>
-using le = std::bool_constant<(force<L>::value <= force<R>::value)>;
+using le = bool_constant<(force<L>::value <= force<R>::value)>;
 
 meta_fn(add2, class lhs, class rhs) {
     meta_return (Int<(force<lhs>::value + force<rhs>::value)>);

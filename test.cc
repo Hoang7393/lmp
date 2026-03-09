@@ -127,7 +127,8 @@ static_assert(
           std::false_type>\
     ::type::value);
 
-inline constexpr char hello_str[] = "hello";
+constexpr char hello_str[] = "hello";
+
 static_assert(char_at<hello_str, 0>::type::value == 'h');
 static_assert(char_at<hello_str, 1>::type::value == 'e');
 static_assert(char_at<hello_str, 4>::type::value == 'o');
