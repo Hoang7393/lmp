@@ -220,17 +220,20 @@ meta_fn(add2, class lhs, class rhs) {
 template<typename T>
 using mandates = typename std::enable_if<T::value>::type;
 
-meta_fn(add , class... args);
-    template<class arg, class... args>
-    struct add<arg, args...> {
-        meta_return (add2<arg, add<args...>>);
-        has_value;
+meta_fn(foldl, template<class, class> class fn, class init, class... args);
+    template<template<class, class> class fn, class init>
+    struct foldl<fn, init> {
+        meta_return (init);
     };
-    template<>
-    struct add<> {
-        meta_return (Int<0>);
-        has_value;
+    template<template<class, class> class fn, class init, class arg, class... args>
+    struct foldl<fn, init, arg, args...> {
+        meta_return (foldl<fn, fn<init, arg>, args...>);
     };
+
+meta_fn(add, class... args) {
+    meta_return (foldl<add2, Int<0>, args...>);
+    has_value;
+};
 
 meta_fn(neg, class rhs) {
     meta_return (Int<(- force<rhs>::value)>);
@@ -246,17 +249,10 @@ meta_fn(mul2, class lhs, class rhs) {
     meta_return (Int<(force<lhs>::value * force<rhs>::value)>);
 };
 
-meta_fn(mul , class... args);
-    template<class arg, class... args>
-    struct mul<arg, args...> {
-        meta_return (mul2<arg, add<args...>>);
-        has_value;
-    };
-    template<>
-    struct mul<> {
-        meta_return (Int<1>);
-        has_value;
-    };
+meta_fn(mul, class... args) {
+    meta_return (foldl<mul2, Int<1>, args...>);
+    has_value;
+};
 
 meta_fn(div, class lhs, class rhs) {
     meta_return (Int<(force<lhs>::value / force<rhs>::value)>);
@@ -315,6 +311,16 @@ meta_fn(reverse_impl, class Lst, class Acc) {
 
 meta_fn(reverse, class lst) {
     meta_return (reverse_impl<lst, nil>);
+};
+
+meta_fn(concat_, class L1, class L2) {
+    using rev1 = reverse<force<L1>>;
+    using rev2 = reverse_impl<force<L2>, rev1>;
+    meta_return (reverse<rev2>);
+};
+
+meta_fn(concat, class... args) {
+    meta_return (foldl<concat_, nil, args...>);
 };
 
 meta_fn(append, class Lst, class Elem) {
@@ -402,7 +408,7 @@ constexpr int string_len(const char* s) {
     return *s ? 1 + string_len(s + 1) : 0;
 }
 
-meta_fn(string_to_list, const char *str) {
+meta_fn(string2list, const char *str) {
     using idx_lst= range<0, string_len(str)>;
     template<class Elem>
     using at = char_at<str, force<Elem>::value>;
@@ -415,9 +421,9 @@ struct string_constant {
     static constexpr char value[sizeof...(Cs) + 1] = { Cs..., '\0' };
 };
 
-meta_fn(list_to_string, class Lst, char... Cs) {
+meta_fn(list2string, class Lst, char... Cs) {
     using lst = force<Lst>;
-    let_lazy(next, list_to_string<cdr<lst>, Cs..., (char)car<lst>::value>);
+    let_lazy(next, list2string<cdr<lst>, Cs..., (char)car<lst>::value>);
     meta_return (
         cond<nilp<lst>,
             string_constant<Cs...>,

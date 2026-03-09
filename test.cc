@@ -14,6 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <cstdio>
 #include "lmp.h"
 
 using namespace lmp;
@@ -134,13 +135,13 @@ static_assert(char_at<hello_str, 1>::type::value == 'e');
 static_assert(char_at<hello_str, 4>::type::value == 'o');
 static_assert(char_at<hello_str, 5>::type::value == '\0');
 
-using hello_str_lst = string_to_list<hello_str>;
+using hello_str_lst = string2list<hello_str>;
 
 static_assert(nth<hello_str_lst, 0>::type::value == (int)'h');
 static_assert(nth<hello_str_lst, 1>::type::value == (int)'e');
 static_assert(nth<hello_str_lst, 4>::type::value == (int)'o');
 
-using hello_str2 = list_to_string<IntList<'H', 'e', 'l', 'l', 'o'>>::type;
+using hello_str2 = list2string<IntList<'H', 'e', 'l', 'l', 'o'>>::type;
 static_assert(hello_str2::value[0] == 'H');
 static_assert(hello_str2::value[1] == 'e');
 static_assert(hello_str2::value[4] == 'o');
@@ -213,6 +214,70 @@ static_assert(apply<add, IntList<1, 2, 3>>::type::value == 6);
 using sum_list = IntList<1, 2, 3, 4, 5, 6, 7, 8>;
 static_assert(apply<add,sum_list>::type::value == 36);
 
+using concat_list = concat<IntList<1,2,3>, IntList<4,5,6>>;
+static_assert(equal<concat_list, IntList<1, 2, 3, 4, 5, 6>>::value);
+
+// exmaple of a query EDSL
+
+struct field1 {
+    static constexpr char name[] = "age";
+    using type = int;
+};
+
+struct field2 {
+    static constexpr char name[] = "height";
+    using type = double;
+};
+
+struct field3 {
+    static constexpr char name[] = "name";
+    using type = char*;
+};
+
+struct mytable {
+    static constexpr char name[] = "mytable";
+    using fields = list<field1, field2>;
+};
+
+template<typename query>
+using is_valid_query = memberp<typename query::field, typename query::from::fields>;
+
+constexpr char from_lit[] = "FROM";
+constexpr char select_lit[] = "SELECT";
+constexpr char space_lit[] = " ";
+constexpr char semicolon_lit[] = ";";
+
+meta_fn(build_query, typename query) {
+    meta_return (list2string<concat<
+        string2list<select_lit>,
+        string2list<space_lit>,
+        string2list<query::field::name>,
+        string2list<space_lit>,
+        string2list<from_lit>,
+        string2list<space_lit>,
+        string2list<query::from::name>,
+        string2list<semicolon_lit>>>);
+};
+
+// usage:
+
+// checking validity of a query
+struct myquery {
+    using from = mytable;
+    using field = field2;
+};
+
+static_assert(is_valid_query<myquery>::value);
+
+struct invalid_query {
+    using from = mytable;
+    using field = field3;
+};
+
+// error:
+// static_assert(is_valid_query<invalid_query>::value);
+
 int main() {
+    printf("%s\n", build_query<myquery>::type::value);
     return 0;
 }  

@@ -110,6 +110,78 @@ primes = filterPrime [2..] where
     p : filterPrime [x | x <- xs, x `mod` p /= 0]
 ```
 
+### 3. A (toy) query DSL
+
+```cpp
+// exmaple of a query EDSL
+
+struct field1 {
+    static constexpr char name[] = "age";
+    using type = int;
+};
+
+struct field2 {
+    static constexpr char name[] = "height";
+    using type = double;
+};
+
+struct field3 {
+    static constexpr char name[] = "name";
+    using type = char*;
+};
+
+struct mytable {
+    static constexpr char name[] = "mytable";
+    using fields = list<field1, field2>;
+};
+
+template<typename query>
+using is_valid_query = memberp<typename query::field, typename query::from::fields>;
+
+constexpr char from_lit[] = "FROM";
+constexpr char select_lit[] = "SELECT";
+constexpr char space_lit[] = " ";
+constexpr char semicolon_lit[] = ";";
+
+meta_fn(build_query, typename query) {
+    meta_return (list2string<concat<
+        string2list<select_lit>,
+        string2list<space_lit>,
+        string2list<query::field::name>,
+        string2list<space_lit>,
+        string2list<from_lit>,
+        string2list<space_lit>,
+        string2list<query::from::name>,
+        string2list<semicolon_lit>>>);
+};
+
+// usage:
+
+// checking validity of a query
+struct myquery {
+    using from = mytable;
+    using field = field2;
+};
+
+static_assert(is_valid_query<myquery>::value);
+
+struct invalid_query {
+    using from = mytable;
+    using field = field3;
+};
+
+// error:
+// static_assert(is_valid_query<invalid_query>::value);
+
+int main() {
+    printf("%s\n", build_query<myquery>::type::value);
+    return 0;
+}
+
+// result:
+// SELECT height FROM mytable;
+```
+
 ## C++20 Concepts
 
 if you are using C++20, in this setting, `concept` becomes "type checking".
