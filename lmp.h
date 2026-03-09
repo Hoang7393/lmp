@@ -358,6 +358,21 @@ meta_fn(memberp, class Item, class Lst) {
     has_value;
 };
 
+meta_fn(next_of, class T, class Lst) {
+    using t = force<T>;
+    using lst = force<Lst>;
+    let_lazy(try_rest, next_of<t, cdr<lst>>);
+    let_lazy(next_item, car<cdr<lst>>);
+    let_lazy(check_list,
+        cond<and_<equal<t, car<lst>>, not_<nilp<cdr<lst>>>>,
+            next_item,
+            try_rest>);
+    meta_return (
+        cond<nilp<lst>,
+            nil,
+            check_list>);
+};
+
 meta_fn(map, template<class> class fn, class Lst) {
     using lst = force<Lst>;
     let_lazy(new_lst, cons<fn<car<lst>>, map<fn, cdr<lst>>>);

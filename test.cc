@@ -171,6 +171,11 @@ static_assert(memberp<Int<1>, my_list>::value);
 static_assert(memberp<Int<2>, my_list>::value);
 static_assert(!memberp<Int<4>, my_list>::value);
 
+static_assert(equal<next_of<Int<1>, my_list>, Int<2>>::value);
+static_assert(equal<next_of<Int<2>, my_list>, Int<3>>::value);
+static_assert(equal<next_of<Int<3>, my_list>, nil>::value);
+static_assert(equal<next_of<Int<4>, my_list>, nil>::value);
+
 using mapped_neg_list = map<neg, my_list>;
 static_assert(length<mapped_neg_list>::value == 3);
 static_assert(nth<mapped_neg_list, 0>::type::value == -1);

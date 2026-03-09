@@ -182,6 +182,93 @@ int main() {
 // SELECT height FROM mytable;
 ```
 
+### 4. (C++17) Compile-time reflex
+
+```cpp
+#include <string>
+
+#include "lmp.h"
+
+template<typename... args>
+struct ReflexObjectImpl;
+
+template<typename N, typename T, typename... args>
+struct ReflexObjectImpl<N, T, args...> : ReflexObjectImpl<args...> {
+    T value;
+    using name = N;
+};
+
+template<>
+struct ReflexObjectImpl<> {};
+
+#define DEFINE_LITERAL(_name_)  \
+    namespace strlit { \
+        inline static constexpr char _name_##_lit[] = #_name_; \
+        using _name_ = typename lmp::string2list<_name_##_lit>::type; \
+    } \
+
+template<typename N, typename T, typename ...args>
+T& getImpl(ReflexObjectImpl<args...> &obj) {
+    using lst = lmp::list<args...>;
+    static_assert(lmp::length<lst>::value >= 2);
+    if constexpr (lmp::eq<lmp::car<lst>, N>::value) {
+        return obj.value;
+    } else {
+        using BaseType = typename lmp::apply<ReflexObjectImpl, lmp::cddr<lst>>::type;
+        return getImpl<N, T>(static_cast<BaseType&>(obj));
+    }
+}
+
+template<typename N, typename T, typename ...args>
+void setImpl(ReflexObjectImpl<args...> &obj, T&& new_value) {
+    using lst = lmp::list<args...>;
+    static_assert(lmp::length<lst>::value >= 2);
+    if constexpr (lmp::eq<lmp::car<lst>, N>::value) {
+        obj.value = std::forward<T&&>(new_value);
+    } else {
+        using BaseType = typename lmp::apply<ReflexObjectImpl, lmp::cddr<lst>>::type;
+        return setImpl<N, T>(static_cast<BaseType&>(obj), std::forward<T&&>(new_value));
+    }
+}
+
+template<typename... args>
+struct ReflexObject {
+    ReflexObjectImpl<args...> value;
+    template<typename N>
+    using value_type = typename lmp::next_of<N, lmp::list<args...>>::type;
+    template<typename N>
+    value_type<N> get() {
+        return getImpl<N, value_type<N>, args...>(value);
+    }
+    template<typename N>
+    void set(value_type<N> &&new_value) {
+        setImpl<N, value_type<N>, args...>(value, std::forward<value_type<N>&&>(new_value));
+    }
+};
+
+DEFINE_LITERAL(name1)
+DEFINE_LITERAL(name2)
+DEFINE_LITERAL(name3)
+DEFINE_LITERAL(name4)
+
+using mytype = ReflexObject<
+    strlit::name1, int,
+    strlit::name2, double,
+    strlit::name3, std::string
+>;
+
+int main (){
+    mytype x;
+    x.set<strlit::name1>(1);
+    x.set<strlit::name2>(3.1415926);
+    x.set<strlit::name3>("hello");
+    printf("%s: %d\n", lmp::list2string<strlit::name1>::type::value, x.get<strlit::name1>());
+    printf("%s: %lf\n", lmp::list2string<strlit::name2>::type::value, x.get<strlit::name2>());
+    printf("%s: %s\n", lmp::list2string<strlit::name3>::type::value, x.get<strlit::name3>().c_str());
+    return 0;
+}
+```
+
 ## C++20 Concepts
 
 if you are using C++20, in this setting, `concept` becomes "type checking".
