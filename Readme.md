@@ -181,7 +181,7 @@ int main() {
 // SELECT height FROM mytable;
 ```
 
-### 4. (C++17) Compile-time reflex
+### 4. (C++17) Compile-time reflection
 
 ```cpp
 #include <string>
