@@ -109,7 +109,7 @@ primes = filterPrime [2..] where
     p : filterPrime [x | x <- xs, x `mod` p /= 0]
 ```
 
-### 3. A (toy) query DSL
+### 3. A (toy) compile-time query EDSL
 
 ```cpp
 // exmaple of a query EDSL
