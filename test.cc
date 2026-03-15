@@ -21,20 +21,20 @@ using namespace lmp;
 
 // infinite list of primes
 
-meta_fn(infinite_integers, int n) {
-    let_lazy(next, infinite_integers<n + 1>);
-    meta_return (cons<Int<n>, next>);
+META_FN(infinite_integers, int n) {
+    LET_LAZY(next, infinite_integers<n + 1>);
+    META_RETURN (cons<Int<n>, next>);
 };
 
-meta_fn(prime_sieve, class Lst) {
+META_FN(prime_sieve, class Lst) {
     using lst = force<Lst>;
     static constexpr int n = car<lst>::value;
 
     template<class T>
     using not_divisible = not_<equal<mod<T, Int<n>>, Int<0>>>;
     
-    let_lazy(tail, prime_sieve<filter<not_divisible, cdr<lst>>>);
-    meta_return (cons<Int<n>, tail>);
+    LET_LAZY(tail, prime_sieve<filter<not_divisible, cdr<lst>>>);
+    META_RETURN (cons<Int<n>, tail>);
 };
 
 using primes = prime_sieve<infinite_integers<2>>;
@@ -252,8 +252,8 @@ constexpr char select_lit[] = "SELECT";
 constexpr char space_lit[] = " ";
 constexpr char semicolon_lit[] = ";";
 
-meta_fn(build_query, typename query) {
-    meta_return (list2string<concat<
+META_FN(build_query, typename query) {
+    META_RETURN (list2string<concat<
         string2list<select_lit>,
         string2list<space_lit>,
         string2list<query::field::name>,
